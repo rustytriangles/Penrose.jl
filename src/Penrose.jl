@@ -3,6 +3,7 @@ module Penrose
 using GeometryTypes
 
 export Dart, Kite
+export placeDartEdge, placeKiteEdge
 export translate, rotate, points, edge_points, edge_center, edge_angle, geometry
 
 struct Dart
@@ -17,6 +18,93 @@ struct Kite
   cy::Number
   angle::Number
   Kite(x,y,a) = new(x,y,(a+360)%360)
+end
+
+# Create a Dart whose edge is centered at the specified point and rotated by the specified angle
+function placeDartEdge(edge, pt, edge_angle)
+
+    phi = (1+sqrt(5))/2
+    h = sqrt(5+2*sqrt(5))/2
+
+    if edge == 1
+        newAngle = (edge_angle +360 - 252) % 360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = 1/4
+        dy = h/2
+
+        return Dart(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    elseif edge == 2
+        newAngle = (edge_angle + 144) % 360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = 1/4 - phi/2
+        dy = h/2
+
+        return Dart(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    elseif edge == 3
+        newAngle = (edge_angle + 360 + 36) % 360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = 1/4 - phi/2
+        dy = -h/2
+
+        return Dart(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    elseif edge == 4
+        newAngle = (edge_angle + 360 + 252) % 360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = 1/4
+        dy = -h/2
+
+        return Dart(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    end
+end
+
+# Create a Kite whose edge is centered at the specified point and rotated by the specified angle
+function placeKiteEdge(edge, pt, edge_angle)
+    phi = (1+sqrt(5))/2
+    h = sqrt(5+2*sqrt(5))/2
+
+    if edge == 1
+        newAngle = (edge_angle + 216)%360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = phi/2 - 1/4
+        dy = h/2
+
+        return Kite(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    elseif edge == 2
+        newAngle = (edge_angle + 360 - 252)%360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = -3/4
+        dy = h/2
+        return Kite(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    elseif edge == 3
+        newAngle = (edge_angle + 72)%360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = -3/4
+        dy = -h/2
+        return Kite(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    elseif edge == 4
+        newAngle = (edge_angle + 360 - 36)%360
+        c = cos(newAngle * pi / 180)
+        s = sin(newAngle * pi / 180)
+
+        dx = phi/2 - 1/4
+        dy = -h/2
+
+        return Kite(pt[1] + dx*c - dy*s, pt[2] + dx*s + dy*c, newAngle)
+    end
 end
 
 # Create a new object by rotating an existing one
@@ -45,10 +133,10 @@ function geometry(d::Dart)
     phi = (1+sqrt(5))/2
     h = sqrt(5+2*sqrt(5))/2
 
-    Point2f0[[d.cx + c*( 0  ) + s*( 0), d.cy - s*( 0  ) + c*( 0)],
-             [d.cx + c*(-1/2) + s*(-h), d.cy - s*(-1/2) + c*(-h)],
-             [d.cx + c*( phi) + s*( 0), d.cy - s*( phi) + c*( 0)],
-             [d.cx + c*(-1/2) + s*( h), d.cy - s*(-1/2) + c*( h)]]
+    Point2f0[[d.cx + c*( 0  ) - s*( 0), d.cy + s*( 0  ) + c*( 0)],
+             [d.cx + c*(-1/2) - s*(-h), d.cy + s*(-1/2) + c*(-h)],
+             [d.cx + c*( phi) - s*( 0), d.cy + s*( phi) + c*( 0)],
+             [d.cx + c*(-1/2) - s*( h), d.cy + s*(-1/2) + c*( h)]]
 end
 
 function geometry(k::Kite)
@@ -57,10 +145,10 @@ function geometry(k::Kite)
     phi = (1+sqrt(5))/2
     h = sqrt(5+2*sqrt(5))/2
 
-    Point2f0[[k.cx + c*(-phi) + s*( 0), k.cy - s*(-phi) + c*( 0)],
-             [k.cx + c*( 1/2) + s*(-h), k.cy - s*( 1/2) + c*(-h)],
-             [k.cx + c*( 1  ) + s*( 0), k.cy - s*( 1 ) + c*( 0)],
-             [k.cx + c*( 1/2) + s*( h), k.cy - s*( 1/2) + c*( h)]]
+    Point2f0[[k.cx + c*(-phi) - s*( 0), k.cy + s*(-phi) + c*( 0)],
+             [k.cx + c*( 1/2) - s*(-h), k.cy + s*( 1/2) + c*(-h)],
+             [k.cx + c*( 1  ) - s*( 0), k.cy + s*( 1 ) + c*( 0)],
+             [k.cx + c*( 1/2) - s*( h), k.cy + s*( 1/2) + c*( h)]]
 end
 
 # Return the two end points of the specified edge (1-4)
@@ -80,8 +168,8 @@ function edge_points(d::Dart, i::Integer)
     ey = pts[ei][2]
     c = cos(d.angle * pi / 180);
     s = sin(d.angle * pi / 180);
-    [[d.cx + c*sx + s*sy, d.cy - s*sx + c*sy],
-     [d.cx + c*ex + s*ey, d.cy - s*ex + c*ey]]
+    [[d.cx + c*sx - s*sy, d.cy + s*sx + c*sy],
+     [d.cx + c*ex - s*ey, d.cy + s*ex + c*ey]]
 end
 
 function edge_points(k::Kite, i::Integer)
@@ -100,8 +188,8 @@ function edge_points(k::Kite, i::Integer)
     ey = pts[ei][2]
     c = cos(k.angle * pi / 180);
     s = sin(k.angle * pi / 180);
-    [[k.cx + c*sx + s*sy, k.cy - s*sx + c*sy],
-     [k.cx + c*ex + s*ey, k.cy - s*ex + c*ey]]
+    [[k.cx + c*sx - s*sy, k.cy + s*sx + c*sy],
+     [k.cx + c*ex - s*ey, k.cy + s*ex + c*ey]]
 end
 
 # Return the center point of the specified edge

@@ -186,18 +186,59 @@ end
 end
 
 @testset "Dart geometry" begin
-    d = Dart(0,0,0)
+    phi = (1+sqrt(5))/2
+    h = sqrt(5+2*sqrt(5))/2
 
-    pts = geometry(d)
-    @test size(pts) == (4,)
-    @test dist_fcn(pts[1], edge_points(d,1)[1]) < 5e-8
-    @test dist_fcn(pts[2], edge_points(d,1)[2]) < 5e-8
-    @test dist_fcn(pts[2], edge_points(d,2)[1]) < 5e-8
-    @test dist_fcn(pts[3], edge_points(d,2)[2]) < 5e-8
-    @test dist_fcn(pts[3], edge_points(d,3)[1]) < 5e-8
-    @test dist_fcn(pts[4], edge_points(d,3)[2]) < 5e-8
-    @test dist_fcn(pts[4], edge_points(d,4)[1]) < 5e-8
-    @test dist_fcn(pts[1], edge_points(d,4)[2]) < 5e-8
+    @testset "Compare geometry to edge_points" begin
+        d = Dart(0,0,0)
+
+        pts = geometry(d)
+        @test size(pts) == (4,)
+        @test dist_fcn(pts[1], edge_points(d,1)[1]) < 5e-8
+        @test dist_fcn(pts[2], edge_points(d,1)[2]) < 5e-8
+        @test dist_fcn(pts[2], edge_points(d,2)[1]) < 5e-8
+        @test dist_fcn(pts[3], edge_points(d,2)[2]) < 5e-8
+        @test dist_fcn(pts[3], edge_points(d,3)[1]) < 5e-8
+        @test dist_fcn(pts[4], edge_points(d,3)[2]) < 5e-8
+        @test dist_fcn(pts[4], edge_points(d,4)[1]) < 5e-8
+        @test dist_fcn(pts[1], edge_points(d,4)[2]) < 5e-8
+    end
+
+    @testset "Angle = 0" begin
+        d = Dart(0,0,0)
+
+        pts = geometry(d)
+
+        @test size(pts) == (4,)
+        @test dist_fcn(pts[1], [0, 0]) < 5e-8
+        @test dist_fcn(pts[2], [-1/2, -h]) < 5e-8
+        @test dist_fcn(pts[3], [phi, 0]) < 5e-8
+        @test dist_fcn(pts[4], [-1/2, h]) < 5e-8
+    end
+
+    @testset "Angle = 90" begin
+        d = Dart(0,0,90)
+
+        pts = geometry(d)
+
+        @test size(pts) == (4,)
+        @test dist_fcn(pts[1], [0, 0]) < 5e-8
+        @test dist_fcn(pts[2], [h, -1/2]) < 5e-8
+        @test dist_fcn(pts[3], [0, phi]) < 5e-8
+        @test dist_fcn(pts[4], [-h,-1/2]) < 5e-8
+    end
+
+    @testset "origin = 10,10" begin
+        d = Dart(10,10,0)
+
+        pts = geometry(d)
+        @test size(pts) == (4,)
+        # Why's the tolerance worse here?
+        @test dist_fcn(pts[1], [10, 10]) < 5e-7
+        @test dist_fcn(pts[2], [10-(1/2), 10-h]) < 5e-7
+        @test dist_fcn(pts[3], [10+phi, 10]) < 5e-7
+        @test dist_fcn(pts[4], [10-(1/2), 10+h]) < 5e-7
+    end
 end
 
 @testset "Kite geometry" begin
@@ -214,3 +255,195 @@ end
     @test dist_fcn(pts[4], edge_points(k,4)[1]) < 5e-8
     @test dist_fcn(pts[1], edge_points(k,4)[2]) < 5e-8
 end
+
+@testset "Vertex 1" begin
+    phi = (1+sqrt(5))/2
+
+    d1 = Dart(-phi, 0, 0)
+    d2 = placeDartEdge(3, edge_center(d1, 2), edge_angle(d1, 2))
+    d3 = placeDartEdge(3, edge_center(d2, 2), edge_angle(d2, 2))
+    d4 = placeDartEdge(3, edge_center(d3, 2), edge_angle(d3, 2))
+    d5 = placeDartEdge(3, edge_center(d4, 2), edge_angle(d4, 2))
+
+    h = sqrt(5+2*sqrt(5))/2
+    k = (2+sqrt(5)) / (1+sqrt(5))
+    p = sqrt(10 + sqrt(20))/4
+
+    @test dist_fcn([d1.cx, d1.cy], [-phi, 0]) < 5e-8
+    @test d1.angle == 0
+
+    @test dist_fcn([d2.cx, d2.cy], [-1/2,-h]) < 5e-8
+    @test d2.angle == 72
+
+    @test dist_fcn([d3.cx, d3.cy], [k,-p]) < 5e-8
+    @test d3.angle == 144
+
+    @test dist_fcn([d4.cx, d4.cy], [k,p]) < 5e-8
+    @test d4.angle == 216
+
+    @test dist_fcn([d5.cx, d5.cy], [-1/2, h]) < 5e-8
+    @test d5.angle == 288
+
+end
+
+@testset "Vertex 2" begin
+    d1 = Dart(0, 0, 0)
+    k1 = placeKiteEdge(2, edge_center(d1, 4), edge_angle(d1, 4))
+    k2 = placeKiteEdge(4, edge_center(k1, 1), edge_angle(k1, 1))
+
+    phi = (1+sqrt(5))/2
+    h = sqrt(5+2*sqrt(5))/2
+    k = (2+sqrt(5)) / (1+sqrt(5))
+    p = sqrt(10 + sqrt(20))/4
+
+    @test dist_fcn([d1.cx, d1.cy], [0, 0]) < 5e-8
+    @test d1.angle == 0
+
+    @test dist_fcn([k1.cx, k1.cy], [-k, p]) < 5e-8
+    @test k1.angle == 36
+
+    @test dist_fcn([k2.cx, k2.cy], [-k,-p]) < 5e-8
+    @test k2.angle == 324
+end
+
+@testset "Vertex 3" begin
+    phi = (1+sqrt(5))/2
+
+    k1 = Kite(phi, 0, 0)
+    k2 = placeKiteEdge(1, edge_center(k1, 4), edge_angle(k1, 4))
+    k3 = placeKiteEdge(1, edge_center(k2, 4), edge_angle(k2, 4))
+    k4 = placeKiteEdge(1, edge_center(k3, 4), edge_angle(k3, 4))
+    k5 = placeKiteEdge(1, edge_center(k4, 4), edge_angle(k4, 4))
+
+    h = sqrt(5+2*sqrt(5))/2
+    k = (2+sqrt(5)) / (1+sqrt(5))
+    p = sqrt(10 + sqrt(20))/4
+
+    @test dist_fcn([k1.cx, k1.cy], [phi, 0]) < 5e-8
+    @test k1.angle == 0
+
+    @test dist_fcn([k2.cx, k2.cy], [1/2, h]) < 5e-8
+    @test k2.angle == 72
+
+    @test dist_fcn([k3.cx, k3.cy], [-k, p]) < 5e-8
+    @test k3.angle == 144
+
+    @test dist_fcn([k4.cx, k4.cy], [-k,-p]) < 5e-8
+    @test k4.angle == 216
+
+    @test dist_fcn([k5.cx, k5.cy], [1/2,-h]) < 5e-8
+    @test k5.angle == 288
+end
+
+@testset "Vertex 4" begin
+    phi = (1+sqrt(5))/2
+
+    d1 = Dart(-phi, 0, 0)
+    d2 = placeDartEdge(3, edge_center(d1, 2), edge_angle(d1, 2))
+    k1 = placeKiteEdge(1, edge_center(d2, 2), edge_angle(d2, 2))
+    k2 = placeKiteEdge(1, edge_center(k1, 4), edge_angle(k1, 4))
+    d3 = placeDartEdge(3, edge_center(k2, 4), edge_angle(k2, 4))
+
+    h = sqrt(5+2*sqrt(5))/2
+    k = (2+sqrt(5)) / (1+sqrt(5))
+    p = sqrt(10 + sqrt(20))/4
+
+    @test dist_fcn([d1.cx, d1.cy], [-phi, 0]) < 5e-8
+    @test d1.angle == 0
+
+    @test dist_fcn([d2.cx, d2.cy], [-1/2,-h]) < 5e-8
+    @test d2.angle == 72
+
+    @test dist_fcn([k1.cx, k1.cy], [k,-p]) < 5e-8
+    @test k1.angle == 324
+
+    @test dist_fcn([k2.cx, k2.cy], [k, p]) < 5e-8
+    @test k2.angle == 36
+
+    @test dist_fcn([d3.cx, d3.cy], [-1/2, h]) < 5e-8
+    @test d3.angle == 288
+end
+
+@testset "Vertex 5" begin
+    k1 = Kite(-1, 0, 0)
+    d1 = placeDartEdge(4, edge_center(k1, 2), edge_angle(k1, 2))
+    k2 = placeKiteEdge(1, edge_center(d1, 3), edge_angle(d1, 3))
+    k3 = placeKiteEdge(1, edge_center(k2, 4), edge_angle(k2, 4))
+    d2 = placeDartEdge(2, edge_center(k3, 4), edge_angle(k3, 4))
+
+    h = sqrt(5+2*sqrt(5))/2
+    k = (2+sqrt(5)) / (1+sqrt(5))
+    p = sqrt(10 + sqrt(20))/4
+
+    @test dist_fcn([k1.cx, k1.cy], [-1, 0]) < 5e-8
+    @test k1.angle == 0
+
+    @test dist_fcn([d1.cx, d1.cy], [-1/2, -h]) < 5e-8
+    @test d1.angle == 324
+
+    @test dist_fcn([k2.cx, k2.cy], [ k, -p]) < 5e-8
+    @test k2.angle == 324
+
+    @test dist_fcn([k3.cx, k3.cy], [ k, p]) < 5e-8
+    @test k3.angle == 36
+
+    @test dist_fcn([d2.cx, d2.cy], [-1/2, h]) < 5e-8
+    @test d2.angle == 36
+end
+
+@testset "Vertex 6" begin
+    phi = (1+sqrt(5))/2
+
+    d1 = Dart(-phi, 0, 0)
+    k1 = placeKiteEdge(4, edge_center(d1, 2), edge_angle(d1, 2))
+    k2 = placeKiteEdge(2, edge_center(k1, 3), edge_angle(k1, 3))
+    k3 = placeKiteEdge(4, edge_center(k2, 1), edge_angle(k2, 1))
+    k4 = placeKiteEdge(2, edge_center(k3, 3), edge_angle(k3, 3))
+
+    h = sqrt(5+2*sqrt(5))/2
+    k = (2+sqrt(5)) / (1+sqrt(5))
+    p = sqrt(10 + sqrt(20))/4
+
+    @test dist_fcn([d1.cx, d1.cy], [-phi, 0]) < 5e-8
+    @test d1.angle == 0
+
+    @test dist_fcn([k1.cx, k1.cy], [-1/2,-h]) < 5e-8
+    @test k1.angle == 0
+
+    @test dist_fcn([k2.cx, k2.cy], [ k,-p]) < 5e-8
+    @test k2.angle == 216
+
+    @test dist_fcn([k3.cx, k3.cy], [ k, p]) < 5e-8
+    @test k3.angle == 144
+
+    @test dist_fcn([k4.cx, k4.cy], [-1/2, h]) < 5e-8
+    @test k4.angle == 0
+end
+
+@testset "Vertex 7" begin
+    phi = (1+sqrt(5))/2
+    h = sqrt(5+2*sqrt(5))/2
+    k = (2+sqrt(5)) / (1+sqrt(5))
+    p = sqrt(10 + sqrt(20))/4
+
+    k1 = Kite(k-1,-p, 108)
+    pt = edge_center(k1, 2)
+    ag = edge_angle(k1, 2)
+    println("place k2 at $pt, $ag")
+    k2 = placeKiteEdge(3, edge_center(k1, 2), edge_angle(k1, 2))
+    d1 = placeDartEdge(4, edge_center(k2, 2), edge_angle(k2, 2))
+    d2 = placeDartEdge(2, edge_center(d1, 3), edge_angle(d1, 3))
+
+    @test dist_fcn([k1.cx, k1.cy], [k-1, -p]) < 5e-8
+    @test k1.angle == 108
+
+    @test dist_fcn([k2.cx, k2.cy], [k-1, p]) < 5e-8
+    @test k2.angle == 252
+
+    @test dist_fcn([d1.cx, d1.cy], [-k, p]) < 5e-8
+    @test d1.angle == 216
+
+    @test dist_fcn([d2.cx, d2.cy], [-k,-p]) < 5e-8
+    @test d2.angle == 144
+end
+
