@@ -421,15 +421,10 @@ end
 end
 
 @testset "Vertex 7" begin
-    phi = (1+sqrt(5))/2
-    h = sqrt(5+2*sqrt(5))/2
     k = (2+sqrt(5)) / (1+sqrt(5))
     p = sqrt(10 + sqrt(20))/4
 
     k1 = Kite(k-1,-p, 108)
-    pt = edge_center(k1, 2)
-    ag = edge_angle(k1, 2)
-    println("place k2 at $pt, $ag")
     k2 = placeKiteEdge(3, edge_center(k1, 2), edge_angle(k1, 2))
     d1 = placeDartEdge(4, edge_center(k2, 2), edge_angle(k2, 2))
     d2 = placeDartEdge(2, edge_center(d1, 3), edge_angle(d1, 3))
